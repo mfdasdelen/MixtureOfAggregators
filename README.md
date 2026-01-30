@@ -1,4 +1,4 @@
-# Mixture of Aggregators (MoA)
+# MoA: Mixture of Aggregators Improves Slide-Level Diagnosis in Computational Pathology
 
 A PyTorch implementation for whole slide image classification using multiple MIL aggregation experts with learned routing.
 
@@ -28,28 +28,23 @@ MoA_paper_code/
 pip install torch pandas numpy scikit-learn h5py tqdm
 ```
 
-## Feature Extraction with CLAM
+## Feature Extraction with TRIDENT
 
-Use [CLAM](https://github.com/mahmoodlab/CLAM) to extract patch embeddings from whole slide images:
+Use [TRIDENT](https://github.com/mahmoodlab/TRIDENT) to extract patch embeddings from whole slide images:
 
 ```bash
-# 1. Clone CLAM
-git clone https://github.com/mahmoodlab/CLAM.git
-cd CLAM
+# 1. Clone TRIDENT
+git clone https://github.com/mahmoodlab/trident.git
+cd trident
+conda create -n "trident" python=3.10
+conda activate trident
+pip install -e .
+```
 
-# 2. Create patches from WSIs
-python create_patches_fp.py \
-  --source /path/to/slides \
-  --save_dir /path/to/patches \
-  --patch_size 256 --step_size 256 --seg --patch
-
-# 3. Extract features using a pretrained encoder
-python extract_features_fp.py \
-  --data_h5_dir /path/to/patches \
-  --data_slide_dir /path/to/slides \
-  --csv_path /path/to/process_list.csv \
-  --feat_dir /path/to/embeddings \
-  --batch_size 512 --slide_ext .svs
+After installation
+```bash
+# 2. Create patches and extract features from WSIs
+python python run_batch_of_slides.py --task all --wsi_dir ./wsis --job_dir ./trident_processed --patch_encoder uni_v1 --mag 20 --patch_size 256
 ```
 
 Output: `.h5` files with `features` array of shape `[N_patches, D]` per slide.
@@ -62,12 +57,14 @@ embeddings/
 ├── patient_002.h5
 └── ...
 
+Create splits before training and save in a root directory along with label mappings
 csv_root/
 ├── label_mapping.csv
 ├── data_fold_0/
 │   ├── train.csv     # Columns: patient_name, labels
 │   ├── val.csv
 │   └── test.csv
+├── data_fold_1/
 └── ...
 ```
 
